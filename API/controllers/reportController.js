@@ -2,6 +2,10 @@ const xlsx = require("xlsx")
 const fs = require("fs")
 
 const generateReport = async (req, res) => {
+    
+}
+
+const generateReport2 = async (req, res) => {
     const empName = req.query.emp_name
     let all = false
 
@@ -106,5 +110,5 @@ const generateDateIndices = (start_, end_) => {
 }
 
 module.exports = {
-    generateReport
+    generateReport2
 }
