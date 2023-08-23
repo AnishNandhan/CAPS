@@ -2,7 +2,43 @@ const xlsx = require("xlsx")
 const fs = require("fs")
 
 const generateReport = async (req, res) => {
-    
+    const paid = req.body.paid
+    const due_date = new Date(req.body.date)
+
+    const month = due_date.getMonth() + 1
+    const year = due_date.getFullYear()
+
+    if(!fs.existsSync(`sheets/reports/${month}-${year}.xlsx`)) {
+        res.send("Report for month does not exist")
+        return
+    }
+
+    const WB = xlsx.readFile(`sheets/reports/${month}-${year}.xlsx`, {
+        cellDates: true,
+        cellNF: false,
+        cellText: false
+    })
+    const sheet_list = WB.SheetNames
+
+    let records = xlsx.utils.sheet_to_json(WB.Sheets[sheet_list[1]], { 
+        dateNF: "yyyy-mm-dd",
+        raw: false
+     })
+
+    let ret = []
+
+    records.forEach(record => {
+        record["Pay due"] = new Date(record["Pay due"] + 'T00:00:00Z')
+        if((paid =="No" && record["Payment done"] == "N") && due_date.valueOf() == record["Pay due"].valueOf()) {
+            console.log(record)
+            ret.push(record)
+        }
+        else if((paid == "Yes" && record["Payment done"] == "Y") && due_date.valueOf() == record["Pay due"].valueOf()) {
+            ret.push(record)
+        }
+    })
+
+    res.json(ret)
 }
 
 const generateReport2 = async (req, res) => {
@@ -110,5 +146,6 @@ const generateDateIndices = (start_, end_) => {
 }
 
 module.exports = {
+    generateReport,
     generateReport2
 }
